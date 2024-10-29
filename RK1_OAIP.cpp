@@ -35,37 +35,37 @@ int main() {
     SetConsoleOutputCP(1251);
 
     int orderCount;
-    cout << "Ââåäèòå êîëè÷åñòâî çàêàçàííûõ áëþä: ";
+    cout << "Ð’Ð²ÐµÐ´Ð¸Ñ‚Ðµ ÐºÐ¾Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð·Ð°ÐºÐ°Ð·Ð°Ð½Ð½Ñ‹Ñ… Ð±Ð»ÑŽÐ´: ";
     cin >> orderCount;
 
     Order* orders = new Order[orderCount];
     double totalCost = 0.0;
 
     for (int i = 0; i < orderCount; i++) {
-        cout << "Ââåäèòå íàçâàíèå áëþäà " << (i + 1) << ": ";
+        cout << "Ð’Ð²ÐµÐ´Ð¸Ñ‚Ðµ Ð½Ð°Ð·Ð²Ð°Ð½Ð¸Ðµ Ð±Ð»ÑŽÐ´Ð° " << (i + 1) << ": ";
         cin.ignore();
         getline(cin, orders[i].Name);
 
-        cout << "Ââåäèòå êîëè÷åñòâî ïîðöèé áëþäà " << (i + 1) << ": ";
+        cout << "Ð’Ð²ÐµÐ´Ð¸Ñ‚Ðµ ÐºÐ¾Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð¿Ð¾Ñ€Ñ†Ð¸Ð¹ Ð±Ð»ÑŽÐ´Ð° " << (i + 1) << ": ";
         cin >> orders[i].Count;
 
-        cout << "Ââåäèòå ñòîèìîñòü çà ïîðöèþ áëþäà " << (i + 1) << ": ";
+        cout << "Ð’Ð²ÐµÐ´Ð¸Ñ‚Ðµ ÑÑ‚Ð¾Ð¸Ð¼Ð¾ÑÑ‚ÑŒ Ð·Ð° Ð¿Ð¾Ñ€Ñ†Ð¸ÑŽ Ð±Ð»ÑŽÐ´Ð° " << (i + 1) << ": ";
         cin >> orders[i].Price;
 
         double orderCost = orders[i].Count * orders[i].Price;
         totalCost += orderCost;
 
-        cout << "Îáùàÿ ñòîèìîñòü çàêàçà: " << formatCurrency(orderCost) << endl;
+        cout << "ÐžÐ±Ñ‰Ð°Ñ ÑÑ‚Ð¾Ð¸Ð¼Ð¾ÑÑ‚ÑŒ Ð·Ð°ÐºÐ°Ð·Ð°: " << formatCurrency(orderCost) << endl;
     }
 
     sortOrders(orders, orderCount);
 
-    cout << endl << "Çàêàçàííûå áëþäà:" << endl;
+    cout << endl << "Ð—Ð°ÐºÐ°Ð·Ð°Ð½Ð½Ñ‹Ðµ Ð±Ð»ÑŽÐ´Ð°:" << endl;
     for (int i = 0; i < orderCount; i++) {
-        cout << (i + 1) << ". " << orders[i].Name << " - Êîëè÷åñòâî: " << orders[i].Count << ", Ñòîèìîñòü çà ïîðöèþ: " << formatCurrency(orders[i].Price) << endl;
+        cout << (i + 1) << ". " << orders[i].Name << " - ÐšÐ¾Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾: " << orders[i].Count << ", Ð¡Ñ‚Ð¾Ð¸Ð¼Ð¾ÑÑ‚ÑŒ Ð·Ð° Ð¿Ð¾Ñ€Ñ†Ð¸ÑŽ: " << formatCurrency(orders[i].Price) << endl;
     }
 
-    cout << "Îáùàÿ ñóììà âñåõ çàêàçîâ: " << formatCurrency(totalCost) << endl;
+    cout << "ÐžÐ±Ñ‰Ð°Ñ ÑÑƒÐ¼Ð¼Ð° Ð²ÑÐµÑ… Ð·Ð°ÐºÐ°Ð·Ð¾Ð²: " << formatCurrency(totalCost) << endl;
 
     delete[] orders;
 
