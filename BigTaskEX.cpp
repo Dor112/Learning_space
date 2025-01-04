@@ -4,7 +4,9 @@
 #include <string>
 #include <fstream>
 #include <pqxx/pqxx>
-
+#include <windows.h>
+using namespace std;
+using namespace pqxx;
 class User {
 public:
     virtual void createOrder() = 0;
@@ -17,104 +19,123 @@ class Admin : public User {
 public:
     void createOrder() override {
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+            
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
             }
-
-            // Создаем транзакцию
-            pqxx::work W(C);
-
-            // SQL-запрос для вставки данных в таблицу
-            std::string query = "INSERT INTO your_table (column1, column2) VALUES ('value1', 'value2');";
-
-            // Выполняем запрос
+            
+            work W(C);
+            int order_id;
+            int user_id;
+            string status;
+            int total_price;
+            string order_date;
+            cout << "Enter order_id: ";
+            cin >> order_id;
+            cout << "Enter user_id: ";
+            cin >> user_id;
+            cout << "Enter status: ";
+            cin >> status;
+            cout << "Enter total_price: ";
+            cin >> total_price;
+            cout << "Enter order_date: ";
+            cin >> order_date;
+            
+            string query = "INSERT INTO orders (order_id, user_id, status, total_price, order_date) VALUES (" +
+                to_string(order_id) + ", " + to_string(user_id) + ", " + W.quote(status) + ", " + to_string(total_price) + ", " + W.quote(order_date) + ");";
+            
+            
             W.exec(query);
 
-            // Подтверждаем транзакцию
+            
             W.commit();
 
-            std::cout << "Record inserted successfully!" << std::endl;
+            cout << "Record inserted successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
 
     }
     
     void viewOrderStatus(int orderId) override {
+        
         try {
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
                 
             }
+            
+            work W(C);
+            int id;
+            cout << "Enter id which status you want to see: ";
+            cin >> id;
+            string query = "SELECT * FROM orders WHERE order_id = " + to_string(id) +";";
+        
+            cout << "Executing query: " << query << endl;
 
-            pqxx::work W(C);
-
-            // SQL-запрос
-            std::string query = "SELECT * FROM your_table;";
-
-            // Логирование запроса
-            std::cout << "Executing query: " << query << std::endl;
-
-            // Выполнение запроса
-            pqxx::result R = W.exec(query);
-
-            // Подтверждаем транзакцию (необходимо для операций, изменяющих данные)
+            result result = W.exec(query);
+            for (const auto& row : result) {
+                cout << "order_id: " << row["order_id"].as<int>() << endl;
+                cout << "user_id: " << row["user_id"].as<int>() << endl;
+                cout << "status: " << row["status"].as<string>() << endl;
+                cout << "total_price: " << row["total_price"].as<float>() << endl;
+                cout << "order_date: " << row["order_date"].as<string>() << endl;
+                
+            }
             W.commit();
 
-            // Вывод результата
-            for (const auto& row : R) {
-                std::cout << row[0].c_str() << std::endl;
-            }
+            
 
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
 
        
     }
     
     void cancelOrder(int orderId) override {
+        int id;
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+            
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
                 
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
-
-            // SQL-запрос для удаления строки
-            std::string query = "DELETE FROM your_table WHERE your_column = 'value_to_delete';";
-
-            // Выполняем запрос
+            
+            work W(C);
+            cout << "Enter id which status you want to delete: ";
+            cin >> id;
+            
+            string query = "DELETE FROM orders WHERE order_id =" + to_string(id) + ";";
+            
+        
             W.exec(query);
 
-            // Подтверждаем транзакцию
+            
             W.commit();
 
-            std::cout << "Row deleted successfully!" << std::endl;
+            cout << "Row deleted successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
 
        
@@ -122,34 +143,48 @@ public:
     
 
     void addProduct() {
+        
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+            
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
              
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
-
-            // SQL-запрос для добавления строки
-            std::string query = "INSERT INTO your_table (column1, column2) VALUES ('value1', 'value2');";
-
-            // Выполняем запрос
+            
+            work W(C);
+            int product_id;
+            string name;
+            int price;
+            int stock_quantity;
+            cout << "Enter product_id: ";
+            cin >> product_id;
+            cout << "Enter name: ";
+            cin >> name;
+            cout << "Enter price: ";
+            cin >> price;
+            cout << "Enter stock_quantity: ";
+            cin >> stock_quantity;
+           
+            
+            string query = "INSERT INTO products (product_id, name, price, stock_quantity ) VALUES (" +
+                to_string(product_id) + ", " + W.quote(name) + ", "+ to_string(price) +", " + to_string(stock_quantity) + ");";
+            
+            
             W.exec(query);
 
-            // Подтверждаем транзакцию
+            
             W.commit();
 
-            std::cout << "Row inserted successfully!" << std::endl;
+            cout << "Row inserted successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
 
        
@@ -157,135 +192,161 @@ public:
     
     void updateProduct() {
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+            
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
                
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
+            
+            work W(C);
+            int product_id;
+            string name;
+            int price;
+            int stock_quantity;
+            cout << "Enter product_id: ";
+            cin >> product_id;
+            cout << "Enter name: ";
+            cin >> name;
+            cout << "Enter price: ";
+            cin >> price;
+            cout << "Enter stock_quantity: ";
+            cin >> stock_quantity;
+            
+            string query = "UPDATE products SET product_id =" + to_string(product_id) + "," + "name =" + W.quote(name) + ", price =" + to_string(price) + ", stock_quantity =" + to_string(stock_quantity) + " WHERE product_id =" + to_string(product_id)+ ";";
 
-            // SQL-запрос для обновления данных
-            std::string query = "UPDATE your_table SET column1 = 'new_value1', column2 = 'new_value2' WHERE your_column = 'condition_value';";
 
-            // Выполняем запрос
             W.exec(query);
 
-            // Подтверждаем транзакцию
             W.commit();
 
-            std::cout << "Row updated successfully!" << std::endl;
+            cout << "Row updated successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
 
       
     }
     void deleteProduct() {
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+            
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
 
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
+            
+            work W(C);
+            int product_id;
+            cout << "Enter id which status you want to delete: ";
+            cin >> product_id;
 
-            // SQL-запрос для удаления строки
-            std::string query = "DELETE FROM your_table WHERE your_column = 'value_to_delete';";
+            string query = "DELETE FROM products WHERE product_id =" + to_string(product_id) + ";";
 
-            // Выполняем запрос
             W.exec(query);
 
-            // Подтверждаем транзакцию
             W.commit();
 
-            std::cout << "Row deleted successfully!" << std::endl;
+            cout << "Row deleted successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
 
 
     }
     void viewAllOrders() {
         try {
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
 
             }
 
-            pqxx::work W(C);
+            work W(C);
 
-            // SQL-запрос
-            std::string query = "SELECT * FROM your_table;";
+            string query = "SELECT * FROM orders;";
 
-            // Логирование запроса
-            std::cout << "Executing query: " << query << std::endl;
+            
+            cout << "Executing query: " << query << endl;
 
-            // Выполнение запроса
-            pqxx::result R = W.exec(query);
-
-            // Подтверждаем транзакцию (необходимо для операций, изменяющих данные)
+            result result = W.exec(query);
+            for (const auto& row : result) {
+                cout << "order_id: " << row["order_id"].as<int>() << endl;
+                cout << "user_id: " << row["user_id"].as<int>() << endl;
+                cout << "status: " << row["status"].as<string>() << endl;
+                cout << "total_price: " << row["total_price"].as<float>() << endl;
+                cout << "order_date: " << row["order_date"].as<string>() << endl;
+                cout << "" << endl;
+            }
             W.commit();
 
-            // Вывод результата
-            for (const auto& row : R) {
-                std::cout << row[0].c_str() << std::endl;
-            }
-
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
     }
     void updateOrderStatus() {
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+            
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
 
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
+            
+            work W(C);
+            int order_id;
+            int order_id_to;
+            int user_id;
+            string status;
+            int total_price;
+            string order_date;
+            cout << "Enter order_id which you want to change: ";
+            cin >> order_id_to;
+            cout << "Enter order_id: ";
+            cin >> order_id;
+            cout << "Enter user_id: ";
+            cin >> user_id;
+            cout << "Enter status: ";
+            cin >> status;
+            cout << "Enter total_price: ";
+            cin >> total_price;
+            cout << "Enter order_date: ";
+            cin >> order_date;
+            
+            string query = "UPDATE orders SET order_id = "+ to_string(order_id) + ", user_id ="+ to_string(user_id) + ", status =" + W.quote(status) + ", total_price =" +to_string(total_price) + ", order_date =" + W.quote(order_date)+" WHERE order_id =" +to_string(order_id_to) +"; ";
 
-            // SQL-запрос для обновления данных
-            std::string query = "UPDATE your_table SET column1 = 'new_value1', column2 = 'new_value2' WHERE your_column = 'condition_value';";
-
-            // Выполняем запрос
+            
             W.exec(query);
 
-            // Подтверждаем транзакцию
+            
             W.commit();
 
-            std::cout << "Row updated successfully!" << std::endl;
+            cout << "Row updated successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
 
 
@@ -297,166 +358,191 @@ class Manager : public User {
 public:
     void createOrder() override {
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
+            work W(C);
+            int order_id;
+            int user_id;
+            string status;
+            int total_price;
+            string order_date;
+            cout << "Enter order_id: ";
+            cin >> order_id;
+            cout << "Enter user_id: ";
+            cin >> user_id;
+            cout << "Enter status: ";
+            cin >> status;
+            cout << "Enter total_price: ";
+            cin >> total_price;
+            cout << "Enter order_date: ";
+            cin >> order_date;
 
-            // SQL-запрос для вставки данных в таблицу
-            std::string query = "INSERT INTO your_table (column1, column2) VALUES ('value1', 'value2');";
+            string query = "INSERT INTO orders (order_id, user_id, status, total_price, order_date) VALUES (" +
+                to_string(order_id) + ", " + to_string(user_id) + ", " + W.quote(status) + ", " + to_string(total_price) + ", " + W.quote(order_date) + ");";
 
-            // Выполняем запрос
+
             W.exec(query);
 
-            // Подтверждаем транзакцию
+
             W.commit();
 
-            std::cout << "Record inserted successfully!" << std::endl;
+            cout << "Record inserted successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
+
     }
     void viewOrderStatus(int orderId) override {
         try {
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
 
             }
 
-            pqxx::work W(C);
+            work W(C);
+            int id;
+            cout << "Enter id which status you want to see: ";
+            cin >> id;
+            string query = "SELECT * FROM orders WHERE order_id = " + to_string(id) + ";";
 
-            // SQL-запрос
-            std::string query = "SELECT * FROM your_table;";
+            cout << "Executing query: " << query << endl;
 
-            // Логирование запроса
-            std::cout << "Executing query: " << query << std::endl;
+            result result = W.exec(query);
+            for (const auto& row : result) {
+                cout << "order_id: " << row["order_id"].as<int>() << endl;
+                cout << "user_id: " << row["user_id"].as<int>() << endl;
+                cout << "status: " << row["status"].as<string>() << endl;
+                cout << "total_price: " << row["total_price"].as<float>() << endl;
+                cout << "order_date: " << row["order_date"].as<string>() << endl;
 
-            // Выполнение запроса
-            pqxx::result R = W.exec(query);
-
-            // Подтверждаем транзакцию (необходимо для операций, изменяющих данные)
+            }
             W.commit();
 
-            // Вывод результата
-            for (const auto& row : R) {
-                std::cout << row[0].c_str() << std::endl;
-            }
+
 
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
 
 
     }
     void cancelOrder(int orderId) override {
+        int id;
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
 
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
 
-            // SQL-запрос для удаления строки
-            std::string query = "DELETE FROM your_table WHERE your_column = 'value_to_delete';";
+            work W(C);
+            cout << "Enter id which status you want to cancel: ";
+            cin >> id;
+            string cancled = "canceled";
 
-            // Выполняем запрос
+            string query = "UPDATE orders SET status =" + W.quote(cancled)+ "WHERE order_id = " + to_string(id) + "; ";
+                 
+
             W.exec(query);
 
-            // Подтверждаем транзакцию
+
             W.commit();
 
-            std::cout << "Row deleted successfully!" << std::endl;
+            cout << "Row deleted successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
+
+
     }
 
     void approveOrder() {
+        int id;
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
-               
+                cerr << "Can't open database" << endl;
+
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
 
-            // Пример SQL-запроса для вставки данных
-            std::string query = "INSERT INTO your_table (column1, column2) VALUES ('value1', 'value2');";
+            work W(C);
+            cout << "Enter id which status you want to approve: ";
+            cin >> id;
+            string completed = "completed";
 
-            // Выполняем запрос
+            string query = "UPDATE orders SET status =" + W.quote(completed) + "WHERE order_id = " + to_string(id) + "; ";
+
+
             W.exec(query);
 
-            // Подтверждаем транзакцию (фиксируем изменения)
+
             W.commit();
 
-            std::cout << "Changes committed successfully!" << std::endl;
+            cout << "Row deleted successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
-
-       
     }
     void updateStock() {
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+            
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
                 
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
+            
+            work W(C);
+            int product_id;
+            cout << "Enter peoduct_id which you want to change: ";
+            cin >> product_id;
+            int stock_quantity;
+            cout << "Enter the number of stock: ";
+            cin >> stock_quantity;
+            string query = "UPDATE products SET stock_quantity ="+ to_string(stock_quantity) + " WHERE product_id ="+ to_string(product_id) + ";";
 
-            // SQL-запрос для обновления данных
-            std::string query = "UPDATE your_table SET column1 = 'new_value1', column2 = 'new_value2' WHERE your_column = 'condition_value';";
-
-            // Выполняем запрос
             W.exec(query);
 
-            // Подтверждаем транзакцию
             W.commit();
 
-            std::cout << "Row updated successfully!" << std::endl;
+            cout << "Row updated successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
 
         
@@ -468,338 +554,345 @@ class Customer : public User {
 public:
     void createOrder() override {
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
+            work W(C);
+            int order_id;
+            int user_id;
+            string status;
+            int total_price;
+            string order_date;
+            cout << "Enter order_id: ";
+            cin >> order_id;
+            cout << "Enter user_id: ";
+            cin >> user_id;
+            cout << "Enter status: ";
+            cin >> status;
+            cout << "Enter total_price: ";
+            cin >> total_price;
+            cout << "Enter order_date: ";
+            cin >> order_date;
 
-            // SQL-запрос для вставки данных в таблицу
-            std::string query = "INSERT INTO your_table (column1, column2) VALUES ('value1', 'value2');";
+            string query = "INSERT INTO orders (order_id, user_id, status, total_price, order_date) VALUES (" +
+                to_string(order_id) + ", " + to_string(user_id) + ", " + W.quote(status) + ", " + to_string(total_price) + ", " + W.quote(order_date) + ");";
 
-            // Выполняем запрос
+
             W.exec(query);
 
-            // Подтверждаем транзакцию
+
             W.commit();
 
-            std::cout << "Record inserted successfully!" << std::endl;
+            cout << "Record inserted successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
+
     }
     void viewOrderStatus(int orderId) override {
         try {
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
 
             }
 
-            pqxx::work W(C);
+            work W(C);
+            int id;
+            cout << "Enter id which status you want to see: ";
+            cin >> id;
+            string query = "SELECT * FROM orders WHERE order_id = " + to_string(id) + ";";
 
-            // SQL-запрос
-            std::string query = "SELECT * FROM your_table;";
+            cout << "Executing query: " << query << endl;
 
-            // Логирование запроса
-            std::cout << "Executing query: " << query << std::endl;
+            result result = W.exec(query);
+            for (const auto& row : result) {
+                cout << "order_id: " << row["order_id"].as<int>() << endl;
+                cout << "user_id: " << row["user_id"].as<int>() << endl;
+                cout << "status: " << row["status"].as<string>() << endl;
+                cout << "total_price: " << row["total_price"].as<float>() << endl;
+                cout << "order_date: " << row["order_date"].as<string>() << endl;
 
-            // Выполнение запроса
-            pqxx::result R = W.exec(query);
-
-            // Подтверждаем транзакцию (необходимо для операций, изменяющих данные)
+            }
             W.commit();
 
-            // Вывод результата
-            for (const auto& row : R) {
-                std::cout << row[0].c_str() << std::endl;
-            }
+
 
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
+
+
     }
     void cancelOrder(int orderId) override {
+        int id;
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
 
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
 
-            // SQL-запрос для удаления строки
-            std::string query = "DELETE FROM your_table WHERE your_column = 'value_to_delete';";
+            work W(C);
+            cout << "Enter id which status you want to cancel: ";
+            cin >> id;
+            string cancled = "canceled";
 
-            // Выполняем запрос
+            string query = "UPDATE orders SET status =" + W.quote(cancled) + "WHERE order_id = " + to_string(id) + "; ";
+
+
             W.exec(query);
 
-            // Подтверждаем транзакцию
+
             W.commit();
 
-            std::cout << "Row deleted successfully!" << std::endl;
+            cout << "Row deleted successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
+
+
     }
 
-    void addToOrder() {
+    void addToOrder(){
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
+            work W(C);
+            int order_id;
+            int user_id;
+            string status;
+            int total_price;
+            string order_date;
+            cout << "Enter order_id: ";
+            cin >> order_id;
+            cout << "Enter user_id: ";
+            cin >> user_id;
+            cout << "Enter status: ";
+            cin >> status;
+            cout << "Enter total_price: ";
+            cin >> total_price;
+            cout << "Enter order_date: ";
+            cin >> order_date;
 
-            // SQL-запрос для вставки данных в таблицу
-            std::string query = "INSERT INTO your_table (column1, column2) VALUES ('value1', 'value2');";
+            string query = "INSERT INTO orders (order_id, user_id, status, total_price, order_date) VALUES (" +
+                to_string(order_id) + ", " + to_string(user_id) + ", " + W.quote(status) + ", " + to_string(total_price) + ", " + W.quote(order_date) + ");";
 
-            // Выполняем запрос
+
             W.exec(query);
 
-            // Подтверждаем транзакцию
+
             W.commit();
 
-            std::cout << "Record inserted successfully!" << std::endl;
+            cout << "Record inserted successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
+
     }
     void removeFromOrder() {
         try {
-            // Подключаемся к базе данных
-            pqxx::connection C("dbname=your_db_name user=your_username password=your_password host=localhost port=5432");
+
+            connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
-                std::cout << "Connected to database: " << C.dbname() << std::endl;
+                cout << "Connected to database: " << C.dbname() << endl;
             }
             else {
-                std::cerr << "Can't open database" << std::endl;
+                cerr << "Can't open database" << endl;
 
             }
 
-            // Создаем транзакцию
-            pqxx::work W(C);
 
-            // SQL-запрос для удаления строки
-            std::string query = "DELETE FROM your_table WHERE your_column = 'value_to_delete';";
+            work W(C);
+            int order_id;
+            cout << "Enter id which order you want to delete: ";
+            cin >> order_id;
 
-            // Выполняем запрос
+            string query = "DELETE FROM orders WHERE order_id =" + to_string(order_id) + ";";
+
             W.exec(query);
 
-            // Подтверждаем транзакцию
             W.commit();
 
-            std::cout << "Row deleted successfully!" << std::endl;
+            cout << "Row deleted successfully!" << endl;
         }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (const exception& e) {
+            cerr << e.what() << endl;
         }
+
+
     }
     void makePayment() {
-        std::cout << "Customer making payment...\n";
+        cout << "Customer making payment...\n";
     }
 };
 
-class DatabaseConnection {
-public:
-    DatabaseConnection(const std::string& connStr) {
-        try {
-            conn = std::make_shared<pqxx::connection>(connStr);
-            std::cout << "Connected to database.\n";
-        }
-        catch (const std::exception& e) {
-            std::cerr << "Connection failed: " << e.what() << std::endl;
-        }
-    }
 
-    void executeQuery(const std::string& query) {
-        pqxx::work w(*conn);
-        pqxx::result r = w.exec(query);
-        std::cout << "Executed query: " << query << std::endl;
-        for (const auto& row : r) {
-            for (const auto& field : row) {
-                std::cout << field.c_str() << " ";
-            }
-            std::cout << std::endl;
-        }
-    }
 
-    void executeNonQuery(const std::string& query) {
-        pqxx::work w(*conn);
-        w.exec(query);
-        w.commit();
-        std::cout << "Executed non-query: " << query << std::endl;
-    }
-
-    
-
-private:
-    std::shared_ptr<pqxx::connection> conn;
-};
-
-void logAction(const std::string& action) {
-    std::ofstream logFile("log.txt", std::ios::app);
-    logFile << action << std::endl;
+void logAction(const string& action) {
+    ofstream logFile("log.txt", ios::app);
+    logFile << action << endl;
 }
 
 void showMainMenu() {
-    std::cout << "Please choose your role:\n";
-    std::cout << "1. Admin\n";
-    std::cout << "2. Manager\n";
-    std::cout << "3. Customer\n";
-    std::cout << "4. Exit\n";
+
+    cout << "Please choose your role:\n";
+    cout << "1. Admin\n";
+    cout << "2. Manager\n";
+    cout << "3. Customer\n";
+    cout << "4. Exit\n";
 
     int choice;
-    std::cin >> choice;
+    cin >> choice;
 
-    std::shared_ptr<User> user;
+    shared_ptr<User> user;
 
     switch (choice) {
     case 1:
-        user = std::make_shared<Admin>();
+        user = make_shared<Admin>();
         break;
     case 2:
-        user = std::make_shared<Manager>();
+        user = make_shared<Manager>();
         break;
     case 3:
-        user = std::make_shared<Customer>();
+        user = make_shared<Customer>();
         break;
     case 4:
-        std::exit(0);
+        exit(0);
     default:
-        std::cout << "Invalid choice\n";
+        cout << "Invalid choice\n";
         return;
     }
 
     // Show role-specific menu
     if (choice == 1) {
         // Admin menu
-        std::cout << "Admin menu:\n";
-        std::cout << "1. Add Product\n";
-        std::cout << "2. View Orders\n";
-        std::cout << "3. Update Order Status\n";
-        std::cout << "4. Create Oreder\n";
-        std::cout << "5. View Order Status\n";
-        std::cout << "6. Cancel Order\n";
-        std::cout << "7. Update Product\n";
-        std::cout << "8. Delete Product\n";
+        cout << "Admin menu:\n";
+        cout << "1. Add Product\n";
+        cout << "2. View Orders\n";
+        cout << "3. Update Order Status\n";
+        cout << "4. Create Oreder\n";
+        cout << "5. View Order Status\n";
+        cout << "6. Cancel Order\n";
+        cout << "7. Update Product\n";
+        cout << "8. Delete Product\n";
         
         int action;
-        std::cin >> action;
+        cin >> action;
         if (action == 1) {
-            std::dynamic_pointer_cast<Admin>(user)->addProduct();
+            dynamic_pointer_cast<Admin>(user)->addProduct();
         }
         else if (action == 2) {
-            std::dynamic_pointer_cast<Admin>(user)->viewAllOrders();
+            dynamic_pointer_cast<Admin>(user)->viewAllOrders();
         }
         else if (action == 3) {
-            std::dynamic_pointer_cast<Admin>(user)->updateOrderStatus();
+            dynamic_pointer_cast<Admin>(user)->updateOrderStatus();
         }
         else if (action == 4) {
-            std::dynamic_pointer_cast<Admin>(user)->createOrder();
+            dynamic_pointer_cast<Admin>(user)->createOrder();
         }
         else if (action == 5) {
-            std::dynamic_pointer_cast<Admin>(user)->viewOrderStatus(1); //requires id
+            dynamic_pointer_cast<Admin>(user)->viewOrderStatus(1); //requires id
         }
         else if (action == 6) {
-            std::dynamic_pointer_cast<Admin>(user)->cancelOrder(2); //requires id
+            dynamic_pointer_cast<Admin>(user)->cancelOrder(2); //requires id
         }
         else if (action == 7) {
-            std::dynamic_pointer_cast<Admin>(user)->updateProduct();
+            dynamic_pointer_cast<Admin>(user)->updateProduct();
         }
         else if (action == 8) {
-            std::dynamic_pointer_cast<Admin>(user)->deleteProduct();
+            dynamic_pointer_cast<Admin>(user)->deleteProduct();
         }
 
     }
     else if (choice == 2) {
         // Manager menu
-        std::cout << "Manager menu:\n";
-        std::cout << "1. Approve Order\n";
-        std::cout << "2. Update Stock\n";
-        std::cout << "3. Create Order\n";
-        std::cout << "4. View Order Status\n";
-        std::cout << "5. Cancel Order\n";
+        cout << "Manager menu:\n";
+        cout << "1. Approve Order\n";
+        cout << "2. Update Stock\n";
+        cout << "3. Create Order\n";
+        cout << "4. View Order Status\n";
+        cout << "5. Cancel Order\n";
 
         int action;
-        std::cin >> action;
+        cin >> action;
         if (action == 1) {
-            std::dynamic_pointer_cast<Manager>(user)->approveOrder();
+            dynamic_pointer_cast<Manager>(user)->approveOrder();
         }
         else if (action == 2) {
-            std::dynamic_pointer_cast<Manager>(user)->updateStock();
+            dynamic_pointer_cast<Manager>(user)->updateStock();
         }
         else if (action == 3) {
-            std::dynamic_pointer_cast<Admin>(user)->createOrder();
+            dynamic_pointer_cast<Manager>(user)->createOrder();
         }
         else if (action == 4) {
-            std::dynamic_pointer_cast<Admin>(user)->viewOrderStatus(1); //requires id
+            dynamic_pointer_cast<Manager>(user)->viewOrderStatus(1); //requires id
         }
         else if (action == 5) {
-            std::dynamic_pointer_cast<Admin>(user)->cancelOrder(2); //requires id
+            dynamic_pointer_cast<Manager>(user)->cancelOrder(2); //requires id
         }
 
     }
     else if (choice == 3) {
         // Customer menu
-        std::cout << "Customer menu:\n";
-        std::cout << "1. Create Order\n";
-        std::cout << "2. View Order Status\n";
-        std::cout << "3. Cancel Order\n";
-        std::cout << "4. Add to Order\n";
-        std::cout << "5. Remove from Oreder\n";
-        std::cout << "6. Make payment\n";
+        cout << "Customer menu:\n";
+        cout << "1. Create Order\n";
+        cout << "2. View Order Status\n";
+        cout << "3. Cancel Order\n";
+        cout << "4. Add to Order\n";
+        cout << "5. Remove from Oreder\n";
+        cout << "6. Make payment\n";
 
         int action;
-        std::cin >> action;
+        cin >> action;
         if (action == 1) {
-            std::dynamic_pointer_cast<Customer>(user)->createOrder();
+            dynamic_pointer_cast<Customer>(user)->createOrder();
         }
         else if (action == 2) {
-            std::dynamic_pointer_cast<Customer>(user)->viewOrderStatus(1);
+            dynamic_pointer_cast<Customer>(user)->viewOrderStatus(1);
         }
         else if (action == 3) {
-            std::dynamic_pointer_cast<Customer>(user)->cancelOrder(1);  // Example OrderId
+            dynamic_pointer_cast<Customer>(user)->cancelOrder(1);
         }
         else if (action == 4) {
-            std::dynamic_pointer_cast<Customer>(user)->addToOrder();  // Example OrderId
+            dynamic_pointer_cast<Customer>(user)->addToOrder(); 
+            
         }
         else if (action == 5) {
-            std::dynamic_pointer_cast<Customer>(user)->removeFromOrder();  // Example OrderId
+            dynamic_pointer_cast<Customer>(user)->removeFromOrder();
         }
         else if (action == 6) {
-            std::dynamic_pointer_cast<Customer>(user)->makePayment();  // Example OrderId
-            std::dynamic_pointer_cast<Customer>(user)->makePayment();  // Example OrderId
+            dynamic_pointer_cast<Customer>(user)->makePayment();
         }
     }
 
@@ -808,6 +901,9 @@ void showMainMenu() {
 }
 
 int main() {
-    showMainMenu();
+    setlocale(LC_ALL, "RU");
+    while (true) {
+        showMainMenu();
+    }
     return 0;
 }
