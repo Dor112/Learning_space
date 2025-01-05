@@ -55,7 +55,7 @@ public:
             
             W.commit();
 
-            cout << "Record inserted successfully!" << endl;
+            cout << "New order created." << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -108,7 +108,7 @@ public:
     void cancelOrder(int orderId) override {
         int id;
         try {
-            
+
             connection C("dbname=bigtaskdb user=postgres password=A27032006 host=localhost port=5432");
 
             if (C.is_open()) {
@@ -116,29 +116,30 @@ public:
             }
             else {
                 cerr << "Can't open database" << endl;
-                
+
             }
 
-            
+
             work W(C);
-            cout << "Enter id which status you want to delete: ";
+            cout << "Enter id which status you want to cancel: ";
             cin >> id;
-            
-            string query = "DELETE FROM orders WHERE order_id =" + to_string(id) + ";";
-            
-        
+            string cancled = "canceled";
+
+            string query = "UPDATE orders SET status =" + W.quote(cancled) + "WHERE order_id = " + to_string(id) + "; ";
+
+
             W.exec(query);
 
-            
+
             W.commit();
 
-            cout << "Row deleted successfully!" << endl;
+            cout << "Order canceled successfully!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
         }
 
-       
+
     }
     
 
@@ -181,7 +182,7 @@ public:
             
             W.commit();
 
-            cout << "Row inserted successfully!" << endl;
+            cout << "New product added!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -225,7 +226,7 @@ public:
 
             W.commit();
 
-            cout << "Row updated successfully!" << endl;
+            cout << "Product updated!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -258,7 +259,7 @@ public:
 
             W.commit();
 
-            cout << "Row deleted successfully!" << endl;
+            cout << "Product deleted successfully!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -343,7 +344,7 @@ public:
             
             W.commit();
 
-            cout << "Row updated successfully!" << endl;
+            cout << "Status updated!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -394,7 +395,7 @@ public:
 
             W.commit();
 
-            cout << "Record inserted successfully!" << endl;
+            cout << "New order created!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -469,7 +470,7 @@ public:
 
             W.commit();
 
-            cout << "Row deleted successfully!" << endl;
+            cout << "Order canceled!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -506,7 +507,7 @@ public:
 
             W.commit();
 
-            cout << "Row deleted successfully!" << endl;
+            cout << "Order approved!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -539,7 +540,7 @@ public:
 
             W.commit();
 
-            cout << "Row updated successfully!" << endl;
+            cout << "Stock updated!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -590,7 +591,7 @@ public:
 
             W.commit();
 
-            cout << "Record inserted successfully!" << endl;
+            cout << "New order created!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -665,7 +666,7 @@ public:
 
             W.commit();
 
-            cout << "Row deleted successfully!" << endl;
+            cout << "Order canceled!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -712,7 +713,7 @@ public:
 
             W.commit();
 
-            cout << "Record inserted successfully!" << endl;
+            cout << "Added new order!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -744,7 +745,7 @@ public:
 
             W.commit();
 
-            cout << "Row deleted successfully!" << endl;
+            cout << "Removed from order!" << endl;
         }
         catch (const exception& e) {
             cerr << e.what() << endl;
@@ -794,9 +795,7 @@ void showMainMenu() {
         return;
     }
 
-    // Show role-specific menu
     if (choice == 1) {
-        // Admin menu
         cout << "Admin menu:\n";
         cout << "1. Add Product\n";
         cout << "2. View Orders\n";
@@ -836,7 +835,6 @@ void showMainMenu() {
 
     }
     else if (choice == 2) {
-        // Manager menu
         cout << "Manager menu:\n";
         cout << "1. Approve Order\n";
         cout << "2. Update Stock\n";
@@ -864,7 +862,6 @@ void showMainMenu() {
 
     }
     else if (choice == 3) {
-        // Customer menu
         cout << "Customer menu:\n";
         cout << "1. Create Order\n";
         cout << "2. View Order Status\n";
@@ -896,7 +893,7 @@ void showMainMenu() {
         }
     }
 
-    // Log action
+
     logAction("User performed an action.");
 }
 
